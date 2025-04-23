@@ -1,4 +1,3 @@
-// src/components/Permissions.js
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase/firebase';
 import { collection, getDocs, setDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -135,8 +134,7 @@ function Permissions() {
 
     try {
       // Cadastrar usuário no Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, newUserEmail, password);
-      const user = userCredential.user;
+      await createUserWithEmailAndPassword(auth, newUserEmail, password);
 
       // Definir permissões iniciais (Admin ou User)
       const initialPermissions = {
@@ -214,9 +212,9 @@ function Permissions() {
 
     try {
       // Atualizar e-mail no Firebase Auth
-      const user = auth.currentUser;
-      if (user.email === editUserEmail) {
-        await updateEmail(user, editUserNewEmail);
+      const currentUser = auth.currentUser;
+      if (currentUser.email === editUserEmail) {
+        await updateEmail(currentUser, editUserNewEmail);
       }
 
       // Atualizar permissões no Firestore

@@ -185,17 +185,17 @@ function Team({ addNotification }) {
     const dayOfMonth = today.getDate();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const hour = today.getHours();
-
+  
     // Update events on the 1st of each month
     if (dayOfMonth === 1) {
       updateEvents(employees);
     }
-
+  
     // Emit notifications every Monday at 00:00
     if (dayOfWeek === 1 && hour === 0) {
       emitNotifications();
     }
-  }, [employees, addNotification]); // Adicionado addNotification como dependência
+  }, [employees, addNotification]); // addNotification já está incluído
 
   // Function to update events
   const updateEvents = (employeesList) => {

@@ -23,7 +23,6 @@ function Candidates({ addNotification }) {
   const [newSlot, setNewSlot] = useState({ date: '', time: '', duration: '30', type: 'online' });
   const [editingSlot, setEditingSlot] = useState(null);
   const [scheduledInterviews, setScheduledInterviews] = useState([]);
-  const [validatedEmails, setValidatedEmails] = useState(new Set());
   const [selectedDates, setSelectedDates] = useState({});
   const [dataInitialized, setDataInitialized] = useState(false);
 
@@ -112,7 +111,8 @@ function Candidates({ addNotification }) {
       try {
         const validatedSnapshot = await getDocs(collection(db, 'validatedEmails'));
         const validatedList = validatedSnapshot.docs.map((doc) => doc.id);
-        setValidatedEmails(new Set(validatedList));
+        // Não usamos validatedEmails diretamente, mas mantemos a lógica para possíveis usos futuros
+        console.log('Validated emails fetched:', validatedList);
       } catch (error) {
         console.error('Error fetching validated emails:', error);
       }
@@ -342,7 +342,7 @@ function Candidates({ addNotification }) {
     };
     const code = `${generateSegment(3)}-${generateSegment(4)}-${generateSegment(3)}`;
     const link = `https://meet.google.com/${code}`;
-    console.log('Generated Google Meet link:', link); // Log para depuração
+    console.log('Generated Google Meet link:', link);
     return link;
   };
 
@@ -467,85 +467,6 @@ function Candidates({ addNotification }) {
     } catch (error) {
       console.error('Error deleting interview slot:', error);
       addNotification('Error deleting interview slot. Please try again.');
-    }
-  };
-
-  const handleDateSelection = async (candidateId, slot) => {
-    try {
-      const link = slot.type === 'online' ? generateMeetLink() : null;
-      const interview = {
-        candidateId,
-        candidateName: candidates.find(c => c.id === candidateId).fullName,
-        start: slot.start,
-        end: slot.end,
-        type: slot.type,
-        link: link,
-      };
-      await setDoc(doc(db, 'scheduledInterviews', candidateId), interview);
-
-      const candidateRef = doc(db, 'candidates', candidateId);
-      await updateDoc(candidateRef, {
-        interviewDate: slot.start,
-        interviewLink: link,
-      });
-
-      await deleteDoc(doc(db, 'interviewSlots', `${slot.start}_${slot.type}`));
-      setAvailableSlots(availableSlots.filter(s => 
-        s.start !== slot.start || s.type !== slot.type
-      ));
-
-      setCandidates(candidates.map(candidate =>
-        candidate.id === candidateId ? { ...candidate, interviewDate: slot.start, interviewLink: link } : candidate
-      ));
-
-      setScheduledInterviews([...scheduledInterviews.filter(i => i.candidateId !== candidateId), interview]);
-      setSelectedDates({ ...selectedDates, [candidateId]: slot.start });
-      addNotification('Interview scheduled successfully.');
-    } catch (error) {
-      console.error('Error scheduling interview:', error);
-      alert('Error scheduling interview. Please try again.');
-    }
-  };
-
-  const handleEditDate = async (candidateId) => {
-    try {
-      const scheduledRef = doc(db, 'scheduledInterviews', candidateId);
-      const scheduledDoc = await getDoc(scheduledRef);
-      let restoredSlot = null;
-      if (scheduledDoc.exists()) {
-        const interviewData = scheduledDoc.data();
-        restoredSlot = {
-          start: interviewData.start,
-          end: interviewData.end,
-          type: interviewData.type,
-        };
-      }
-
-      await deleteDoc(doc(db, 'scheduledInterviews', candidateId));
-      
-      const candidateRef = doc(db, 'candidates', candidateId);
-      await updateDoc(candidateRef, {
-        interviewDate: null,
-        interviewLink: null,
-      });
-
-      if (restoredSlot) {
-        await setDoc(doc(db, 'interviewSlots', `${restoredSlot.start}_${restoredSlot.type}`), restoredSlot);
-        setAvailableSlots([...availableSlots, restoredSlot]);
-      }
-
-      setCandidates(candidates.map(candidate =>
-        candidate.id === candidateId ? { ...candidate, interviewDate: null, interviewLink: null } : candidate
-      ));
-
-      setScheduledInterviews(scheduledInterviews.filter(i => i.candidateId !== candidateId));
-      const updatedDates = { ...selectedDates };
-      delete updatedDates[candidateId];
-      setSelectedDates(updatedDates);
-      addNotification('Interview date cleared. You can now select a new date.');
-    } catch (error) {
-      console.error('Error clearing interview date:', error);
-      alert('Error clearing interview date. Please try again.');
     }
   };
 
@@ -699,38 +620,38 @@ function Candidates({ addNotification }) {
       </div>
 
       {selectedCandidate && (
-        console.log('Rendering popup for candidate:', selectedCandidate),
-        <div className="popup-overlay" style={{ zIndex: 1001 }}>
-          <div className="popup-content" style={{ display: 'flex', flexDirection: 'row' }}>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ display: 'inline-block' }}>Candidate Details: {selectedCandidate.fullName}</h2>
-              <div className="candidate-details">
-                <div className="candidate-photo" style={{ width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden' }}>
-                  {selectedCandidate.photo && selectedCandidate.photo.startsWith('https://') && !photoError ? (
-                    <img
-                      src={selectedCandidate.photo}
-                      alt="Candidate Photo"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={() => {
-                        console.error('Error loading photo:', selectedCandidate.photo);
-                        setPhotoError(true);
-                      }}
-                      onLoad={() => console.log('Photo loaded successfully')}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        background: '#ccc',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        color: '#fff',
-                      }}
-                    >
-                      No Photo
+  console.log('Rendering popup for candidate:', selectedCandidate),
+  <div className="popup-overlay" style={{ zIndex: 1001 }}>
+    <div className="popup-content" style={{ display: 'flex', flexDirection: 'row' }}>
+      <div style={{ flex: 1 }}>
+        <h2 style={{ display: 'inline-block' }}>Candidate Details: {selectedCandidate.fullName}</h2>
+        <div className="candidate-details">
+          <div className="candidate-photo" style={{ width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden' }}>
+            {selectedCandidate.photo && selectedCandidate.photo.startsWith('https://') && !photoError ? (
+              <img
+                src={selectedCandidate.photo}
+                alt={selectedCandidate.fullName} // Ajustado para ser mais descritivo
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={() => {
+                  console.error('Error loading photo:', selectedCandidate.photo);
+                  setPhotoError(true);
+                }}
+                onLoad={() => console.log('Photo loaded successfully')}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  background: '#ccc',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  color: '#fff',
+                }}
+              >
+                No Photo
                     </div>
                   )}
                 </div>
