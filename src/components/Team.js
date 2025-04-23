@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db, auth } from '../firebase/firebase';
-import { collection, addDoc, updateDoc, doc, getDocs, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, getDocs, setDoc } from 'firebase/firestore'; // Removido deleteDoc
 import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { IMaskInput } from 'react-imask';
 import jsPDF from 'jspdf';
@@ -144,7 +144,6 @@ function Team({ addNotification }) {
             return employee;
           }
 
-          const onboardingDate = new Date(admission);
           const activeDate = new Date(admission);
           activeDate.setDate(admission.getDate() + 1); // Assume onboarding completes after 1 day
 
@@ -164,7 +163,7 @@ function Team({ addNotification }) {
 
         // Update Firestore with new statuses
         updatedEmployees.forEach(async (employee) => {
-          if (employee.status !== employees.find((e) => e.id === employee.id)?.status) {
+          if (employee.status !== employeesList.find((e) => e.id === employee.id)?.status) {
             const employeeRef = doc(db, 'employees', employee.id);
             await updateDoc(employeeRef, { status: employee.status });
           }
@@ -178,7 +177,7 @@ function Team({ addNotification }) {
     };
 
     fetchEmployees();
-  }, []);
+  }, []); // Removido employees das dependências para evitar loop infinito
 
   // Update events at the start of each month and emit notifications every Monday
   useEffect(() => {
@@ -196,7 +195,7 @@ function Team({ addNotification }) {
     if (dayOfWeek === 1 && hour === 0) {
       emitNotifications();
     }
-  }, [employees]);
+  }, [employees, addNotification]); // Adicionado addNotification como dependência
 
   // Function to update events
   const updateEvents = (employeesList) => {
@@ -302,7 +301,7 @@ function Team({ addNotification }) {
     }
   }, [formData.admissionDate]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     const formattedData = {
       ...formData,
@@ -384,7 +383,7 @@ function Team({ addNotification }) {
       console.error('Error saving employee:', error.message);
       alert('Error saving employee: ' + error.message);
     }
-  };
+  }, [editingEmployee, formData, employees]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -1045,7 +1044,7 @@ FMX Consulting Team`;
           {['Active', 'Onboarding', 'Hiring', 'Deactivated'].map((group) => (
             <div key={group} className="status-group">
               <div className="group-header" onClick={() => toggleGroup(group)}>
-              <h3>{group} {groupedEmployees[group].length}</h3>
+                <h3>{group} {groupedEmployees[group].length}</h3>
                 <i className={`fas fa-chevron-${expandedGroups[group] ? 'up' : 'down'}`}></i>
               </div>
               {expandedGroups[group] && (
@@ -1798,7 +1797,7 @@ FMX Consulting Team`;
                 <div>
                   <div className="section-title">Dismissal Process</div>
                   <div className="form-row">
-                    <div className="form-group">
+                  <div className="form-group">
                       <label>Dismissal Date</label>
                       <IMaskInput
                         mask="00/00/0000"
