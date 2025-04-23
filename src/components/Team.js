@@ -1423,7 +1423,7 @@ FMX Consulting Team`;
               </div>
               <div className="form-row">
                 <div className="form-group">
-                <label>Contact</label>
+                  <label>Contact</label>
                   <IMaskInput
                     mask="(00) 00000-0000"
                     value={formData.contact}
@@ -1674,8 +1674,7 @@ FMX Consulting Team`;
                   <input
                     type="text"
                     name="trialPeriod1"
-                    value={formData.trialPeriod1}
-                    readOnly
+                    value={formData.trialPeriod1}                     readOnly
                     className="input-trial-period"
                   />
                 </div>
