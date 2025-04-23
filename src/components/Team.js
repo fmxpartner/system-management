@@ -461,7 +461,7 @@ DOC 4 - Advance Opt-Out Letter - We make all payments at the beginning of the mo
 
 Your start date is scheduled for ${formData.admissionDate || '(Admission Date)'} at 09:00 at the address below:
 Rua Vilela, 665, CJ1704, Tatuapé, São Paulo - SP, 03314-000
-The working                 hours for the position will be from 13:00 to 22:00, but on the first day, please arrive at 09:00 for onboarding.
+The working hours for the position will be from 13:00 to 22:00, but on the first day, please arrive at 09:00 for onboarding.
 
 We look forward to your response with the required documents.
 
@@ -1217,8 +1217,7 @@ FMX Consulting Team`;
                       checked={formData.hiringProcess.cpf}
                       onChange={handleCheckboxChange}
                     />
-                    <span
-                      className="checkbox-label">CPF</span>
+                    <span className="checkbox-label">CPF</span>
                   </li>
                   <li className="checkbox-item">
                     <input
@@ -1424,7 +1423,7 @@ FMX Consulting Team`;
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Contact</label>
+                <label>Contact</label>
                   <IMaskInput
                     mask="(00) 00000-0000"
                     value={formData.contact}
