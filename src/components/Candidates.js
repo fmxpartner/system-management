@@ -23,7 +23,6 @@ function Candidates({ addNotification }) {
   const [newSlot, setNewSlot] = useState({ date: '', time: '', duration: '30', type: 'online' });
   const [editingSlot, setEditingSlot] = useState(null);
   const [scheduledInterviews, setScheduledInterviews] = useState([]);
-  const [selectedDates, setSelectedDates] = useState({});
   const [dataInitialized, setDataInitialized] = useState(false);
 
   const sidebarRef = useRef(null);
@@ -81,11 +80,6 @@ function Candidates({ addNotification }) {
         const interviewsSnapshot = await getDocs(collection(db, 'scheduledInterviews'));
         const interviewsList = interviewsSnapshot.docs.map((doc) => doc.data());
         setScheduledInterviews(interviewsList);
-        const dates = {};
-        interviewsList.forEach((interview) => {
-          dates[interview.candidateId] = interview.start;
-        });
-        setSelectedDates(dates);
 
         const updatedCandidates = await Promise.all(candidatesList.map(async (candidate) => {
           const scheduledRef = doc(db, 'scheduledInterviews', candidate.id);
@@ -111,7 +105,6 @@ function Candidates({ addNotification }) {
       try {
         const validatedSnapshot = await getDocs(collection(db, 'validatedEmails'));
         const validatedList = validatedSnapshot.docs.map((doc) => doc.id);
-        // Não usamos validatedEmails diretamente, mas mantemos a lógica para possíveis usos futuros
         console.log('Validated emails fetched:', validatedList);
       } catch (error) {
         console.error('Error fetching validated emails:', error);
@@ -331,21 +324,6 @@ function Candidates({ addNotification }) {
     setCalendarOpen(true);
   };
 
-  const generateMeetLink = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    const generateSegment = (length) => {
-      let segment = '';
-      for (let i = 0; i < length; i++) {
-        segment += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return segment;
-    };
-    const code = `${generateSegment(3)}-${generateSegment(4)}-${generateSegment(3)}`;
-    const link = `https://meet.google.com/${code}`;
-    console.log('Generated Google Meet link:', link);
-    return link;
-  };
-
   const sendOnlineInterviewEmail = async () => {
     if (!selectedCandidate) {
       alert('No candidate selected.');
@@ -375,11 +353,19 @@ function Candidates({ addNotification }) {
   };
 
   const copyInterviewLink = () => {
-    if (selectedCandidate && selectedCandidate.interviewLink) {
-      navigator.clipboard.writeText(selectedCandidate.interviewLink);
-      addNotification('Interview link copied to clipboard.');
-    } else {
+    if (!selectedCandidate || !selectedCandidate.interviewLink) {
       alert('No interview link available to copy.');
+      return;
+    }
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(selectedCandidate.interviewLink).then(() => {
+        addNotification('Interview link copied to clipboard.');
+      }).catch((err) => {
+        console.error('Failed to copy interview link:', err);
+        alert('Failed to copy interview link. Please copy it manually.');
+      });
+    } else {
+      alert('Clipboard API is not supported in this environment.');
     }
   };
 
@@ -620,38 +606,38 @@ function Candidates({ addNotification }) {
       </div>
 
       {selectedCandidate && (
-  console.log('Rendering popup for candidate:', selectedCandidate),
-  <div className="popup-overlay" style={{ zIndex: 1001 }}>
-    <div className="popup-content" style={{ display: 'flex', flexDirection: 'row' }}>
-      <div style={{ flex: 1 }}>
-        <h2 style={{ display: 'inline-block' }}>Candidate Details: {selectedCandidate.fullName}</h2>
-        <div className="candidate-details">
-          <div className="candidate-photo" style={{ width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden' }}>
-            {selectedCandidate.photo && selectedCandidate.photo.startsWith('https://') && !photoError ? (
-              <img
-                src={selectedCandidate.photo}
-                alt={selectedCandidate.fullName} // Ajustado para ser mais descritivo
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={() => {
-                  console.error('Error loading photo:', selectedCandidate.photo);
-                  setPhotoError(true);
-                }}
-                onLoad={() => console.log('Photo loaded successfully')}
-              />
-            ) : (
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  background: '#ccc',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  color: '#fff',
-                }}
-              >
-                No Photo
+        console.log('Rendering popup for candidate:', selectedCandidate),
+        <div className="popup-overlay" style={{ zIndex: 1001 }}>
+          <div className="popup-content" style={{ display: 'flex', flexDirection: 'row' }}>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ display: 'inline-block' }}>Candidate Details: {selectedCandidate.fullName}</h2>
+              <div className="candidate-details">
+                <div className="candidate-photo" style={{ width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden' }}>
+                  {selectedCandidate.photo && selectedCandidate.photo.startsWith('https://') && !photoError ? (
+                    <img
+                      src={selectedCandidate.photo}
+                      alt={selectedCandidate.fullName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={() => {
+                        console.error('Error loading photo:', selectedCandidate.photo);
+                        setPhotoError(true);
+                      }}
+                      onLoad={() => console.log('Photo loaded successfully')}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        background: '#ccc',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        color: '#fff',
+                      }}
+                    >
+                      No Photo
                     </div>
                   )}
                 </div>

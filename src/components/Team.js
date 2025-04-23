@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db, auth } from '../firebase/firebase';
-import { collection, addDoc, updateDoc, doc, getDocs, setDoc } from 'firebase/firestore'; // Removido deleteDoc
+import { collection, addDoc, updateDoc, doc, getDocs, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { IMaskInput } from 'react-imask';
 import jsPDF from 'jspdf';
@@ -185,17 +185,17 @@ function Team({ addNotification }) {
     const dayOfMonth = today.getDate();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const hour = today.getHours();
-  
+
     // Update events on the 1st of each month
     if (dayOfMonth === 1) {
       updateEvents(employees);
     }
-  
+
     // Emit notifications every Monday at 00:00
     if (dayOfWeek === 1 && hour === 0) {
       emitNotifications();
     }
-  }, [employees, addNotification]); // addNotification já está incluído
+  }, [employees, addNotification]); // Adicionado addNotification como dependência
 
   // Function to update events
   const updateEvents = (employeesList) => {
@@ -461,7 +461,7 @@ DOC 4 - Advance Opt-Out Letter - We make all payments at the beginning of the mo
 
 Your start date is scheduled for ${formData.admissionDate || '(Admission Date)'} at 09:00 at the address below:
 Rua Vilela, 665, CJ1704, Tatuapé, São Paulo - SP, 03314-000
-The working hours for the position will be from 13:00 to 22:00, but on the first day, please arrive at 09:00 for onboarding.
+The working                 hours for the position will be from 13:00 to 22:00, but on the first day, please arrive at 09:00 for onboarding.
 
 We look forward to your response with the required documents.
 
@@ -1051,8 +1051,19 @@ FMX Consulting Team`;
                 <div className="table-scroll-wrapper">
                   <table className="permissions-table">
                     <thead>
-                      <tr>{/* No spaces or line breaks between <th> elements */}
-                        <th>Name</th><th>Neighborhood</th><th>City</th><th>Admission Date</th>{group === 'Deactivated' && <th>Dismissal Date</th>}<th>Contract</th><th>Work Duration</th><th>Expiry</th><th>Salary</th><th>Schedule</th><th>Brands</th>{group !== 'Deactivated' && <th>Action</th>}
+                      <tr>
+                        <th>Name</th>
+                        <th>Neighborhood</th>
+                        <th>City</th>
+                        <th>Admission Date</th>
+                        {group === 'Deactivated' && <th>Dismissal Date</th>}
+                        <th>Contract</th>
+                        <th>Work Duration</th>
+                        <th>Expiry</th>
+                        <th>Salary</th>
+                        <th>Schedule</th>
+                        <th>Brands</th>
+                        {group !== 'Deactivated' && <th>Action</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1106,8 +1117,10 @@ FMX Consulting Team`;
               <h3>Events</h3>
               <table className="permissions-table">
                 <thead>
-                  <tr>{/* No spaces or line breaks between <th> elements */}
-                    <th>Name</th><th>Date</th><th>Event</th>
+                  <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Event</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1131,7 +1144,7 @@ FMX Consulting Team`;
           )}
         </div>
       </div>
-  
+
       {isPopupOpen && (
         <div className="popup">
           <div className="popup-content">
@@ -1204,7 +1217,8 @@ FMX Consulting Team`;
                       checked={formData.hiringProcess.cpf}
                       onChange={handleCheckboxChange}
                     />
-                    <span className="checkbox-label">CPF</span>
+                    <span
+                      className="checkbox-label">CPF</span>
                   </li>
                   <li className="checkbox-item">
                     <input
@@ -1308,7 +1322,7 @@ FMX Consulting Team`;
                   </li>
                 </ul>
               </div>
-  
+
               <div className="section-title">Employee Details</div>
               <div className="form-row">
                 <div className="form-group">
@@ -1597,7 +1611,7 @@ FMX Consulting Team`;
                   />
                 </div>
               </div>
-  
+
               <div className="section-title">Employer Details</div>
               <div className="form-row">
                 <div className="form-group">
@@ -1748,7 +1762,7 @@ FMX Consulting Team`;
                   />
                 </div>
               </div>
-  
+
               <div className="section-title">Brands</div>
               <div className="form-row">
                 <div className="form-group">
@@ -1792,12 +1806,12 @@ FMX Consulting Team`;
                   </label>
                 </div>
               </div>
-  
+
               {formData.isDismissalPopupOpen && (
                 <div>
                   <div className="section-title">Dismissal Process</div>
                   <div className="form-row">
-                  <div className="form-group">
+                    <div className="form-group">
                       <label>Dismissal Date</label>
                       <IMaskInput
                         mask="00/00/0000"
@@ -1962,7 +1976,7 @@ FMX Consulting Team`;
                   </div>
                 </div>
               )}
-  
+
               <div className="buttons">
                 <button type="submit">Save</button>
                 <button type="button" onClick={closePopup}>Cancel</button>
@@ -1978,7 +1992,7 @@ FMX Consulting Team`;
           </div>
         </div>
       )}
-  
+
       {showSuccessPopup && (
         <div className="success-popup">
           <p>Employee saved successfully!</p>
